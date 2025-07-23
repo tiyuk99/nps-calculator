@@ -1,0 +1,403 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NPS Data Parser & Calculator</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            padding: 40px;
+        }
+        
+        h1 {
+            text-align: center;
+            color: #333;
+            margin-bottom: 30px;
+            font-size: 2.5em;
+            font-weight: 300;
+        }
+        
+        .input-section {
+            margin-bottom: 30px;
+        }
+        
+        .input-group {
+            margin-bottom: 20px;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #555;
+        }
+        
+        textarea {
+            width: 100%;
+            height: 200px;
+            padding: 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            line-height: 1.5;
+            resize: vertical;
+            transition: border-color 0.3s ease;
+        }
+        
+        textarea:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+        
+        input[type="number"] {
+            width: 200px;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: border-color 0.3s ease;
+        }
+        
+        input[type="number"]:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+        
+        .button-group {
+            text-align: center;
+            margin: 30px 0;
+        }
+        
+        button {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 50px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin: 0 10px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+        
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+        }
+        
+        button:active {
+            transform: translateY(0);
+        }
+        
+        .results {
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            border-radius: 15px;
+            padding: 30px;
+            margin-top: 30px;
+            display: none;
+        }
+        
+        .results.show {
+            display: block;
+            animation: slideUp 0.5s ease;
+        }
+        
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .result-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+        
+        .result-card {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+        
+        .result-card h3 {
+            color: #555;
+            margin-bottom: 10px;
+            font-size: 1.1em;
+        }
+        
+        .result-card .number {
+            font-size: 2.5em;
+            font-weight: bold;
+            color: #667eea;
+        }
+        
+        .nps-score {
+            text-align: center;
+            margin-top: 20px;
+            padding: 20px;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+        
+        .nps-score h3 {
+            color: #555;
+            margin-bottom: 10px;
+        }
+        
+        .nps-score .score {
+            font-size: 3em;
+            font-weight: bold;
+            color: #28a745;
+        }
+        
+        .error {
+            background: #ff6b6b;
+            color: white;
+            padding: 15px;
+            border-radius: 10px;
+            margin-top: 20px;
+            display: none;
+        }
+        
+        .example {
+            background: #f8f9fa;
+            border: 1px solid #e9ecef;
+            border-radius: 8px;
+            padding: 15px;
+            margin-top: 10px;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+            color: #666;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>NPS Data Parser & Calculator</h1>
+        
+        <div class="input-section">
+            <div class="input-group">
+                <label for="npsData">Paste your NPS data here:</label>
+                <textarea id="npsData" placeholder="Paste your NPS data exactly as it appears..."></textarea>
+                <div class="example">
+                    Example format:<br>
+                    NPS érték megoszlása<br>
+                    0 1 2 3 4 5 6 7 8 9 10<br>
+                    0% 0% 0%<br>
+                    10%<br>
+                    0% 0% 0% 0%<br>
+                    40%<br>
+                    20%<br>
+                    30%
+                </div>
+            </div>
+            
+            <div class="input-group">
+                <label for="sampleSize">Total number of people who took the test:</label>
+                <input type="number" id="sampleSize" placeholder="e.g., 10" min="1">
+            </div>
+        </div>
+        
+        <div class="button-group">
+            <button onclick="calculateNPS()">Calculate NPS</button>
+            <button onclick="exportToExcel()" id="exportBtn" style="display: none;">Export to Excel</button>
+        </div>
+        
+        <div id="error" class="error"></div>
+        
+        <div id="results" class="results">
+            <div class="result-grid">
+                <div class="result-card">
+                    <h3>Detractors (0-6)</h3>
+                    <div class="number" id="detractors">-</div>
+                </div>
+                <div class="result-card">
+                    <h3>Passives (7-8)</h3>
+                    <div class="number" id="passives">-</div>
+                </div>
+                <div class="result-card">
+                    <h3>Promoters (9-10)</h3>
+                    <div class="number" id="promoters">-</div>
+                </div>
+            </div>
+            
+            <div class="nps-score">
+                <h3>Net Promoter Score</h3>
+                <div class="score" id="npsScore">-</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let calculatedData = null;
+
+        function showError(message) {
+            const errorDiv = document.getElementById('error');
+            errorDiv.textContent = message;
+            errorDiv.style.display = 'block';
+            setTimeout(() => {
+                errorDiv.style.display = 'none';
+            }, 5000);
+        }
+
+        function parseNPSData(text) {
+            // Remove the header and score labels, keep only percentages
+            const lines = text.split('\n').map(line => line.trim()).filter(line => line);
+            
+            // Extract all percentage values
+            const percentages = [];
+            const percentageRegex = /(\d+(?:\.\d+)?)%/g;
+            
+            for (const line of lines) {
+                let match;
+                while ((match = percentageRegex.exec(line)) !== null) {
+                    percentages.push(parseFloat(match[1]));
+                }
+            }
+            
+            // We should have exactly 11 percentages (for scores 0-10)
+            if (percentages.length !== 11) {
+                throw new Error(`Expected 11 percentage values, found ${percentages.length}. Please check your data format.`);
+            }
+            
+            return percentages;
+        }
+
+        function calculateNPS() {
+            const npsDataText = document.getElementById('npsData').value.trim();
+            const sampleSize = parseInt(document.getElementById('sampleSize').value);
+            
+            if (!npsDataText) {
+                showError('Please paste your NPS data.');
+                return;
+            }
+            
+            if (!sampleSize || sampleSize <= 0) {
+                showError('Please enter a valid sample size.');
+                return;
+            }
+            
+            try {
+                const percentages = parseNPSData(npsDataText);
+                
+                // Verify percentages add up to 100%
+                const total = percentages.reduce((sum, p) => sum + p, 0);
+                if (Math.abs(total - 100) > 0.1) {
+                    showError(`Percentages don't add up to 100% (found ${total.toFixed(1)}%). Please check your data.`);
+                    return;
+                }
+                
+                // Calculate people in each category
+                const detractorPercentage = percentages.slice(0, 7).reduce((sum, p) => sum + p, 0); // 0-6
+                const passivePercentage = percentages.slice(7, 9).reduce((sum, p) => sum + p, 0);   // 7-8
+                const promoterPercentage = percentages.slice(9, 11).reduce((sum, p) => sum + p, 0); // 9-10
+                
+                const detractors = Math.round(detractorPercentage * sampleSize / 100);
+                const passives = Math.round(passivePercentage * sampleSize / 100);
+                const promoters = Math.round(promoterPercentage * sampleSize / 100);
+                
+                // Calculate NPS
+                const npsScore = promoterPercentage - detractorPercentage;
+                
+                // Store data for export
+                calculatedData = {
+                    detractors,
+                    passives,
+                    promoters,
+                    npsScore: Math.round(npsScore),
+                    sampleSize,
+                    percentages,
+                    detractorPercentage,
+                    passivePercentage,
+                    promoterPercentage
+                };
+                
+                // Display results
+                document.getElementById('detractors').textContent = detractors;
+                document.getElementById('passives').textContent = passives;
+                document.getElementById('promoters').textContent = promoters;
+                document.getElementById('npsScore').textContent = Math.round(npsScore);
+                
+                document.getElementById('results').classList.add('show');
+                document.getElementById('exportBtn').style.display = 'inline-block';
+                
+            } catch (error) {
+                showError(error.message);
+            }
+        }
+
+        function exportToExcel() {
+            if (!calculatedData) return;
+            
+            // Create CSV content
+            const csvContent = [
+                ['Metric', 'Value'],
+                ['Detractors (0-6)', calculatedData.detractors],
+                ['Passives (7-8)', calculatedData.passives],
+                ['Promoters (9-10)', calculatedData.promoters],
+                ['NPS Score', calculatedData.npsScore],
+                ['Sample Size', calculatedData.sampleSize],
+                [''],
+                ['Score', 'Percentage', 'Count'],
+                ...calculatedData.percentages.map((percentage, index) => [
+                    index,
+                    `${percentage}%`,
+                    Math.round(percentage * calculatedData.sampleSize / 100)
+                ])
+            ];
+            
+            const csvString = csvContent.map(row => row.join(',')).join('\n');
+            
+            // Create and download file
+            const blob = new Blob([csvString], { type: 'text/csv' });
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `nps_results_${new Date().toISOString().split('T')[0]}.csv`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            window.URL.revokeObjectURL(url);
+        }
+
+        // Allow Enter key to calculate
+        document.getElementById('sampleSize').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                calculateNPS();
+            }
+        });
+    </script>
+</body>
+</html>
