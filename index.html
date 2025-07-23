@@ -32,13 +32,13 @@
         .header {
             display: flex;
             align-items: center;
-            justify-content: center;
+            justify-content: flex-start;
             margin-bottom: 40px;
-            gap: 20px;
+            gap: 30px;
         }
         
         .shiwa-logo {
-            width: 80px;
+            width: 120px;
             height: auto;
         }
         
@@ -365,43 +365,25 @@
         <div id="error" class="error"></div>
         
         <div id="results" class="results">
-            <div class="result-grid">
-                <div class="result-card">
-                    <h3>Detractors (0-6)</h3>
-                    <div class="number" id="detractors">-</div>
+            <div class="excel-table" id="excelTable" onclick="copyExcelData(this)">
+                <div class="excel-row">
+                    <div class="excel-cell excel-header">Detractors</div>
+                    <div class="excel-cell excel-header">Passives</div>
+                    <div class="excel-cell excel-header">Promoters</div>
                 </div>
-                <div class="result-card">
-                    <h3>Passives (7-8)</h3>
-                    <div class="number" id="passives">-</div>
+                <div class="excel-row">
+                    <div class="excel-cell excel-value" id="detractorsCopy">-</div>
+                    <div class="excel-cell excel-value" id="passivesCopy">-</div>
+                    <div class="excel-cell excel-value" id="promotersCopy">-</div>
                 </div>
-                <div class="result-card">
-                    <h3>Promoters (9-10)</h3>
-                    <div class="number" id="promoters">-</div>
-                </div>
+            </div>
+            <div class="copy-instructions">
+                Click the table above to copy all values, then paste into Excel
             </div>
             
             <div class="nps-score">
                 <h3>Net Promoter Score</h3>
                 <div class="score" id="npsScore">-</div>
-            </div>
-            
-            <div class="copy-results" id="copyResults" style="display: none;">
-                <h3>Copy to Excel:</h3>
-                <div class="excel-table" id="excelTable" onclick="copyExcelData(this)">
-                    <div class="excel-row">
-                        <div class="excel-cell excel-header">Detractors</div>
-                        <div class="excel-cell excel-header">Passives</div>
-                        <div class="excel-cell excel-header">Promoters</div>
-                    </div>
-                    <div class="excel-row">
-                        <div class="excel-cell excel-value" id="detractorsCopy">-</div>
-                        <div class="excel-cell excel-value" id="passivesCopy">-</div>
-                        <div class="excel-cell excel-value" id="promotersCopy">-</div>
-                    </div>
-                </div>
-                <div class="copy-instructions">
-                    Click the table above to copy all values, then paste into Excel
-                </div>
             </div>
         </div>
     </div>
@@ -490,19 +472,12 @@
                     promoterPercentage
                 };
                 
-                // Display results
-                document.getElementById('detractors').textContent = detractors;
-                document.getElementById('passives').textContent = passives;
-                document.getElementById('promoters').textContent = promoters;
-                document.getElementById('npsScore').textContent = Math.round(npsScore);
-                
                 // Update copy cells
                 document.getElementById('detractorsCopy').textContent = detractors;
                 document.getElementById('passivesCopy').textContent = passives;
                 document.getElementById('promotersCopy').textContent = promoters;
                 
-                document.getElementById('results').classList.add('show');
-                document.getElementById('copyResults').style.display = 'block';
+                document.getElementById('results').style.display = 'block';
                 
             } catch (error) {
                 showError(error.message);
