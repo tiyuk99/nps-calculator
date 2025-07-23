@@ -27,6 +27,15 @@
             box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
             padding: 40px;
             border: 1px solid #e9ecef;
+            position: relative;
+        }
+        
+        .shiwa-logo {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            width: 120px;
+            height: auto;
         }
         
         .logo {
@@ -113,6 +122,72 @@
         .button-group {
             text-align: center;
             margin: 30px 0;
+        }
+        
+        .copy-results {
+            margin-top: 30px;
+            text-align: center;
+        }
+        
+        .copy-results h3 {
+            font-family: 'Times New Roman', Times, serif;
+            color: #333;
+            margin-bottom: 15px;
+            font-weight: normal;
+        }
+        
+        .copy-cells {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+        
+        .copy-cell {
+            background: white;
+            border: 2px solid #007bff;
+            border-radius: 4px;
+            padding: 15px 20px;
+            min-width: 100px;
+            text-align: center;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+            position: relative;
+        }
+        
+        .copy-cell:hover {
+            background: #f8f9fa;
+        }
+        
+        .copy-cell.copied {
+            background: #d4edda;
+            border-color: #28a745;
+        }
+        
+        .copy-cell .label {
+            font-family: 'Times New Roman', Times, serif;
+            font-size: 12px;
+            color: #666;
+            margin-bottom: 5px;
+        }
+        
+        .copy-cell .value {
+            font-family: 'Times New Roman', Times, serif;
+            font-size: 24px;
+            font-weight: bold;
+            color: #007bff;
+        }
+        
+        .copy-cell.copied .value {
+            color: #28a745;
+        }
+        
+        .copy-instructions {
+            margin-top: 15px;
+            font-family: 'Times New Roman', Times, serif;
+            font-size: 14px;
+            color: #666;
+            font-style: italic;
         }
         
         button {
@@ -247,32 +322,25 @@
         }
         
         .example {
-            background: linear-gradient(135deg, #f1f5f9 0%, #e2e8f0 100%);
-            border: 1px solid #cbd5e1;
-            border-radius: 12px;
-            padding: 20px;
-            margin-top: 15px;
-            font-family: 'SF Mono', 'Monaco', 'Inconsolata', 'Roboto Mono', monospace;
-            font-size: 13px;
-            color: #64748b;
-            position: relative;
-            overflow: hidden;
-        }
-        
-        .example::before {
-            content: 'EXAMPLE';
-            position: absolute;
-            top: 8px;
-            right: 12px;
-            font-size: 10px;
-            font-weight: 600;
-            color: #94a3b8;
-            letter-spacing: 1px;
+            background: #f8f9fa;
+            border: 1px solid #e9ecef;
+            border-radius: 4px;
+            padding: 15px;
+            margin-top: 10px;
+            font-family: 'Times New Roman', Times, serif;
+            font-size: 12px;
+            color: #666;
         }
     </style>
 </head>
 <body>
     <div class="container">
+        <img src="https://bigpicture.one/wp-content/uploads/2022/03/shiwaforce.png" alt="SHIWA FORCE" class="shiwa-logo">
+        
+        <div class="logo">
+            <h2>SHIWA FORCE</h2>
+        </div>
+        
         <h1>NPS Data Parser & Calculator</h1>
         
         <div class="input-section">
@@ -300,7 +368,6 @@
         
         <div class="button-group">
             <button onclick="calculateNPS()">Calculate NPS</button>
-            <button onclick="exportToExcel()" id="exportBtn" style="display: none;">Export to Excel</button>
         </div>
         
         <div id="error" class="error"></div>
@@ -324,6 +391,27 @@
             <div class="nps-score">
                 <h3>Net Promoter Score</h3>
                 <div class="score" id="npsScore">-</div>
+            </div>
+            
+            <div class="copy-results" id="copyResults" style="display: none;">
+                <h3>Copy these values to Excel:</h3>
+                <div class="copy-cells">
+                    <div class="copy-cell" onclick="copyToClipboard('detractorsCopy', this)">
+                        <div class="label">Detractors</div>
+                        <div class="value" id="detractorsCopy">-</div>
+                    </div>
+                    <div class="copy-cell" onclick="copyToClipboard('passivesCopy', this)">
+                        <div class="label">Passives</div>
+                        <div class="value" id="passivesCopy">-</div>
+                    </div>
+                    <div class="copy-cell" onclick="copyToClipboard('promotersCopy', this)">
+                        <div class="label">Promoters</div>
+                        <div class="value" id="promotersCopy">-</div>
+                    </div>
+                </div>
+                <div class="copy-instructions">
+                    Click each cell to copy its value, then paste into Excel
+                </div>
             </div>
         </div>
     </div>
@@ -418,46 +506,43 @@
                 document.getElementById('promoters').textContent = promoters;
                 document.getElementById('npsScore').textContent = Math.round(npsScore);
                 
+                // Update copy cells
+                document.getElementById('detractorsCopy').textContent = detractors;
+                document.getElementById('passivesCopy').textContent = passives;
+                document.getElementById('promotersCopy').textContent = promoters;
+                
                 document.getElementById('results').classList.add('show');
-                document.getElementById('exportBtn').style.display = 'inline-block';
+                document.getElementById('copyResults').style.display = 'block';
                 
             } catch (error) {
                 showError(error.message);
             }
         }
 
-        function exportToExcel() {
-            if (!calculatedData) return;
+        function copyToClipboard(elementId, cellElement) {
+            const value = document.getElementById(elementId).textContent;
             
-            // Create CSV content
-            const csvContent = [
-                ['Metric', 'Value'],
-                ['Detractors (0-6)', calculatedData.detractors],
-                ['Passives (7-8)', calculatedData.passives],
-                ['Promoters (9-10)', calculatedData.promoters],
-                ['NPS Score', calculatedData.npsScore],
-                ['Sample Size', calculatedData.sampleSize],
-                [''],
-                ['Score', 'Percentage', 'Count'],
-                ...calculatedData.percentages.map((percentage, index) => [
-                    index,
-                    `${percentage}%`,
-                    Math.round(percentage * calculatedData.sampleSize / 100)
-                ])
-            ];
+            // Create a temporary textarea element to copy the value
+            const tempTextarea = document.createElement('textarea');
+            tempTextarea.value = value;
+            document.body.appendChild(tempTextarea);
+            tempTextarea.select();
+            tempTextarea.setSelectionRange(0, 99999); // For mobile devices
             
-            const csvString = csvContent.map(row => row.join(',')).join('\n');
+            try {
+                document.execCommand('copy');
+                
+                // Visual feedback
+                cellElement.classList.add('copied');
+                setTimeout(() => {
+                    cellElement.classList.remove('copied');
+                }, 1500);
+                
+            } catch (err) {
+                console.error('Failed to copy: ', err);
+            }
             
-            // Create and download file
-            const blob = new Blob([csvString], { type: 'text/csv' });
-            const url = window.URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = `nps_results_${new Date().toISOString().split('T')[0]}.csv`;
-            document.body.appendChild(a);
-            a.click();
-            document.body.removeChild(a);
-            window.URL.revokeObjectURL(url);
+            document.body.removeChild(tempTextarea);
         }
 
         // Allow Enter key to calculate
