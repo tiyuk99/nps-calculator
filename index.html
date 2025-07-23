@@ -27,37 +27,24 @@
             box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
             padding: 40px;
             border: 1px solid #e9ecef;
-            position: relative;
+        }
+        
+        .header {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 40px;
+            gap: 20px;
         }
         
         .shiwa-logo {
-            position: absolute;
-            top: 20px;
-            right: 20px;
-            width: 120px;
+            width: 80px;
             height: auto;
         }
         
-        .logo {
-            text-align: center;
-            margin-bottom: 30px;
-            padding-bottom: 20px;
-            border-bottom: 2px solid #e9ecef;
-        }
-        
-        .logo h2 {
-            font-family: 'Times New Roman', Times, serif;
-            font-size: 2.5em;
-            font-weight: bold;
+        h1 {
             color: #333;
             margin: 0;
-            letter-spacing: 2px;
-        }
-        
-        h1 {
-            text-align: center;
-            color: #333;
-            margin-bottom: 30px;
             font-size: 2em;
             font-weight: normal;
             font-family: 'Times New Roman', Times, serif;
@@ -136,49 +123,57 @@
             font-weight: normal;
         }
         
-        .copy-cells {
-            display: flex;
-            justify-content: center;
-            gap: 20px;
-            flex-wrap: wrap;
-        }
-        
-        .copy-cell {
-            background: white;
+        .excel-table {
+            display: inline-block;
             border: 2px solid #007bff;
             border-radius: 4px;
-            padding: 15px 20px;
-            min-width: 100px;
-            text-align: center;
+            overflow: hidden;
             cursor: pointer;
-            transition: background-color 0.3s ease;
-            position: relative;
+            transition: all 0.3s ease;
+            margin: 0 auto;
         }
         
-        .copy-cell:hover {
-            background: #f8f9fa;
+        .excel-table:hover {
+            border-color: #0056b3;
+            box-shadow: 0 2px 8px rgba(0, 123, 255, 0.3);
         }
         
-        .copy-cell.copied {
-            background: #d4edda;
+        .excel-table.copied {
             border-color: #28a745;
+            background: #d4edda;
         }
         
-        .copy-cell .label {
-            font-family: 'Times New Roman', Times, serif;
-            font-size: 12px;
-            color: #666;
-            margin-bottom: 5px;
+        .excel-row {
+            display: flex;
         }
         
-        .copy-cell .value {
+        .excel-cell {
+            padding: 12px 20px;
+            border-right: 1px solid #007bff;
+            background: white;
+            min-width: 120px;
+            text-align: center;
             font-family: 'Times New Roman', Times, serif;
-            font-size: 24px;
+        }
+        
+        .excel-cell:last-child {
+            border-right: none;
+        }
+        
+        .excel-header {
+            background: #f8f9fa;
+            font-weight: bold;
+            color: #333;
+            font-size: 14px;
+        }
+        
+        .excel-value {
+            font-size: 20px;
             font-weight: bold;
             color: #007bff;
         }
         
-        .copy-cell.copied .value {
+        .excel-table.copied .excel-value {
             color: #28a745;
         }
         
@@ -335,13 +330,10 @@
 </head>
 <body>
     <div class="container">
-        <img src="https://bigpicture.one/wp-content/uploads/2022/03/shiwaforce.png" alt="SHIWA FORCE" class="shiwa-logo">
-        
-        <div class="logo">
-            <h2>SHIWA FORCE</h2>
+        <div class="header">
+            <img src="https://bigpicture.one/wp-content/uploads/2022/03/shiwaforce.png" alt="SHIWA FORCE" class="shiwa-logo">
+            <h1>NPS Data Parser & Calculator</h1>
         </div>
-        
-        <h1>NPS Data Parser & Calculator</h1>
         
         <div class="input-section">
             <div class="input-group">
@@ -394,23 +386,21 @@
             </div>
             
             <div class="copy-results" id="copyResults" style="display: none;">
-                <h3>Copy these values to Excel:</h3>
-                <div class="copy-cells">
-                    <div class="copy-cell" onclick="copyToClipboard('detractorsCopy', this)">
-                        <div class="label">Detractors</div>
-                        <div class="value" id="detractorsCopy">-</div>
+                <h3>Copy to Excel:</h3>
+                <div class="excel-table" id="excelTable" onclick="copyExcelData(this)">
+                    <div class="excel-row">
+                        <div class="excel-cell excel-header">Detractors</div>
+                        <div class="excel-cell excel-header">Passives</div>
+                        <div class="excel-cell excel-header">Promoters</div>
                     </div>
-                    <div class="copy-cell" onclick="copyToClipboard('passivesCopy', this)">
-                        <div class="label">Passives</div>
-                        <div class="value" id="passivesCopy">-</div>
-                    </div>
-                    <div class="copy-cell" onclick="copyToClipboard('promotersCopy', this)">
-                        <div class="label">Promoters</div>
-                        <div class="value" id="promotersCopy">-</div>
+                    <div class="excel-row">
+                        <div class="excel-cell excel-value" id="detractorsCopy">-</div>
+                        <div class="excel-cell excel-value" id="passivesCopy">-</div>
+                        <div class="excel-cell excel-value" id="promotersCopy">-</div>
                     </div>
                 </div>
                 <div class="copy-instructions">
-                    Click each cell to copy its value, then paste into Excel
+                    Click the table above to copy all values, then paste into Excel
                 </div>
             </div>
         </div>
@@ -519,24 +509,29 @@
             }
         }
 
-        function copyToClipboard(elementId, cellElement) {
-            const value = document.getElementById(elementId).textContent;
+        function copyExcelData(tableElement) {
+            const detractors = document.getElementById('detractorsCopy').textContent;
+            const passives = document.getElementById('passivesCopy').textContent;
+            const promoters = document.getElementById('promotersCopy').textContent;
             
-            // Create a temporary textarea element to copy the value
+            // Create tab-separated values (Excel format)
+            const excelData = `${detractors}\t${passives}\t${promoters}`;
+            
+            // Create a temporary textarea to copy the data
             const tempTextarea = document.createElement('textarea');
-            tempTextarea.value = value;
+            tempTextarea.value = excelData;
             document.body.appendChild(tempTextarea);
             tempTextarea.select();
-            tempTextarea.setSelectionRange(0, 99999); // For mobile devices
+            tempTextarea.setSelectionRange(0, 99999);
             
             try {
                 document.execCommand('copy');
                 
                 // Visual feedback
-                cellElement.classList.add('copied');
+                tableElement.classList.add('copied');
                 setTimeout(() => {
-                    cellElement.classList.remove('copied');
-                }, 1500);
+                    tableElement.classList.remove('copied');
+                }, 2000);
                 
             } catch (err) {
                 console.error('Failed to copy: ', err);
